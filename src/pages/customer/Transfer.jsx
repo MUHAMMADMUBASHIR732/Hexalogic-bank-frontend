@@ -27,13 +27,13 @@ export default function Transfer() {
   async function submit(e) {
     e.preventDefault();
     if (!form.fromAccount) return setMsg({ type: 'err', text: 'Choose the account to send from' });
-    if (!/^\d+$/.test(form.toAccount)) return setMsg({ type: 'err', text: 'Enter the destination account ID (numbers only)' });
+    if (!/^(acc-)?\d+$/i.test(form.toAccount.trim().replace(/\s+/g, ''))) return setMsg({ type: 'err', text: 'Enter the destination account ID or ACC-number' });
     if (!isMoney(form.amount)) return setMsg({ type: 'err', text: 'Enter a valid amount' });
     setBusy(true); setMsg(null);
     try {
       const { data: res } = await api.post('/transfers', {
-        fromAccount: Number(form.fromAccount),
-        toAccount: Number(form.toAccount),
+        fromAccount: form.fromAccount,
+        toAccount: form.toAccount.trim().replace(/\s+/g, ''), // may be ID or ACC-number
         amount: form.amount, // string, e.g. "1500.50"
       });
       setMsg({ type: 'ok', text: res.message });
@@ -66,9 +66,9 @@ export default function Transfer() {
             {from && <small className="muted">Available balance: <strong>{pkr(from.balance)}</strong></small>}
           </Field>
 
-          <Field label="To account ID" htmlFor="to-acc" hint="Ask the receiver for their account ID. You can also pick one of your own accounts.">
+          <Field label="To account" htmlFor="to-acc" hint="Ask the receiver for their account number (ACC-....) or numeric ID. You can also pick one of your own accounts from the list.">
             <input
-              id="to-acc" inputMode="numeric" list="own-accounts" placeholder="e.g. 3"
+              id="to-acc" inputMode="numeric" list="own-accounts" placeholder="e.g. 3 or ACC-92610278"
               value={form.toAccount} onChange={set('toAccount')} autoComplete="off" required
             />
             <datalist id="own-accounts">
