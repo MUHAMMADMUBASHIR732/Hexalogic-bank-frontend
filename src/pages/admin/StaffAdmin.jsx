@@ -70,14 +70,13 @@ export default function StaffAdmin() {
   return (
     <>
       <PageHeader title="Administration" subtitle="Create and manage staff logins. Admin only." />
-      <div className="narrow">
-        <Alert type={msg?.type} onClose={() => setMsg(null)}>{msg?.text}</Alert>
+      <Alert type={msg?.type} onClose={() => setMsg(null)}>{msg?.text}</Alert>
 
+      <div className="split">
         <form className="card form" onSubmit={createStaff} noValidate>
           <h3 className="section-title">Create a staff login</h3>
           <div className="form-grid">
-            <Field label="CNIC (13 digits)"><input value={form.cnic} onChange={set('cnic')} inputMode="numeric" placeholder="3511111111103" maxLength={13} required />
-            </Field>
+            <Field label="CNIC (13 digits)"><input value={form.cnic} onChange={set('cnic')} inputMode="numeric" placeholder="3511111111103" maxLength={13} required /></Field>
             <Field label="Full name"><input value={form.name} onChange={set('name')} placeholder="Sara Teller" required /></Field>
             <Field label="Designation">
               <select value={form.designation} onChange={set('designation')}>
