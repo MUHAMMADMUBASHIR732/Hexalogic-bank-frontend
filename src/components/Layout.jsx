@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeftRight, BarChart3, Calculator, ClipboardCheck, ConciergeBell, HandCoins, LogOut, Menu, UserPlus, Wallet, X,
+  ArrowLeftRight, BarChart3, Calculator, ClipboardCheck, ConciergeBell, HandCoins, LogOut, Menu, ScrollText, UserCog, UserPlus, Wallet, X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Brand } from './ui';
@@ -16,6 +16,8 @@ const LINKS = [
   { to: '/open-account', label: 'Open account', icon: UserPlus, roles: ['teller', 'manager'] },
   { to: '/loans/pending', label: 'Pending loans', icon: ClipboardCheck, roles: ['manager'] },
   { to: '/reports', label: 'Reports', icon: BarChart3, roles: ['manager'] },
+  { to: '/admin/staff', label: 'Administration', icon: UserCog, roles: ['admin'] },
+  { to: '/admin/audit', label: 'Audit log', icon: ScrollText, roles: ['admin'] },
 ];
 
 export default function Layout() {
