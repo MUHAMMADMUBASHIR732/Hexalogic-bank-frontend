@@ -15,14 +15,17 @@ import Counter from './pages/staff/Counter';
 import OpenAccount from './pages/staff/OpenAccount';
 import PendingLoans from './pages/manager/PendingLoans';
 import Reports from './pages/manager/Reports';
+import StaffAdmin from './pages/admin/StaffAdmin';
+import AuditLog from './pages/admin/AuditLog';
 
 const CUSTOMER = ['customer'];
 const STAFF = ['teller', 'manager'];
 const MGR = ['manager'];
+const ADMIN = ['admin'];
 
 function Home() { // send each role to its start page
   const { role } = useAuth();
-  return <Navigate to={role === 'customer' ? '/accounts' : '/counter'} replace />;
+  return <Navigate to={role === 'customer' ? '/accounts' : role === 'admin' ? '/admin/staff' : '/counter'} replace />;
 }
 
 function NotFound() {
@@ -52,6 +55,8 @@ export default function App() {
             <Route path="/open-account" element={<Protected roles={STAFF}><OpenAccount /></Protected>} />
             <Route path="/loans/pending" element={<Protected roles={MGR}><PendingLoans /></Protected>} />
             <Route path="/reports" element={<Protected roles={MGR}><Reports /></Protected>} />
+            <Route path="/admin/staff" element={<Protected roles={ADMIN}><StaffAdmin /></Protected>} />
+            <Route path="/admin/audit" element={<Protected roles={ADMIN}><AuditLog /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
