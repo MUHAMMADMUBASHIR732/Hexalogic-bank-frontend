@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Banknote, CreditCard, FileText, ShieldAlert, UserPlus, Users } from 'lucide-react';
+import { Banknote, FileText, Undo2 } from 'lucide-react';
 import { api, errMsg } from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import { useFetch } from '../../hooks/useFetch';
 import CustomerSearch from '../../components/CustomerSearch';
 import { Alert, ConfirmDialog, Empty, Field, PageHeader, StatusBadge, TableSkeleton } from '../../components/ui';
-import { cap, fmtAccountNumber, isMoney, pkr } from '../../utils/format';
+import { fmtAccountNumber, fmtTime, isMoney, pkr } from '../../utils/format';
 
 function MoneyForm({ account, kind, onResult }) {
   const [amount, setAmount] = useState('');
@@ -22,7 +22,7 @@ function MoneyForm({ account, kind, onResult }) {
       setAmount('');
       onResult({ type: 'ok', text: data.message }, true);
     } catch (err) {
-      onResult({ type: 'err', text: errMsg(err) }); // 'Account is not active', ...
+      onResult({ type: 'err', text: errMsg(err) });
     } finally {
       setBusy(false);
     }
@@ -39,90 +39,51 @@ function MoneyForm({ account, kind, onResult }) {
   );
 }
 
-function JointForm({ account, onResult }) {
-  const [cust, setCust] = useState(null);
+function ReverseList({ account, onResult }) {
+  const list = useFetch(`/accounts/${account.account_id}/reversible`);
+  const [ask, setAsk] = useState(null);
   const [busy, setBusy] = useState(false);
-  async function add() {
+  const rows = list.data || [];
+
+  async function reverse() {
     setBusy(true);
     try {
-      const { data } = await api.post(`/accounts/${account.account_id}/joint-holders`, { customerId: cust.customer_id });
-      setCust(null);
+      const { data } = await api.post(`/transactions/${ask.transaction_id}/reverse`);
+      setAsk(null);
+      list.reload();
       onResult({ type: 'ok', text: data.message }, true);
     } catch (err) {
       onResult({ type: 'err', text: errMsg(err) });
+      setAsk(null);
     } finally {
       setBusy(false);
     }
   }
+
+  if (list.loading && !list.data) return <TableSkeleton rows={2} />;
+  if (list.error) return <Alert>{list.error}</Alert>;
+  if (rows.length === 0) return <Empty title="Nothing to reverse" text="Only today's deposits and withdrawals can be undone." />;
   return (
     <div className="form">
-      <CustomerSearch label="Joint holder" selected={cust} onSelect={setCust} />
-      <button className="btn btn-primary" onClick={add} disabled={!cust || busy}>{busy ? 'Adding…' : 'Add joint holder'}</button>
-    </div>
-  );
-}
-
-function CardForm({ account, onResult }) {
-  const [type, setType] = useState('debit');
-  const [busy, setBusy] = useState(false);
-  async function issue(e) {
-    e.preventDefault();
-    setBusy(true);
-    try {
-      const { data } = await api.post(`/accounts/${account.account_id}/cards`, { cardType: type });
-      onResult({ type: 'ok', text: data.message });
-    } catch (err) {
-      onResult({ type: 'err', text: errMsg(err) });
-    } finally {
-      setBusy(false);
-    }
-  }
-  return (
-    <form className="form" onSubmit={issue}>
-      <Field label="Card type" htmlFor="card-type">
-        <select id="card-type" value={type} onChange={(e) => setType(e.target.value)}>
-          <option value="debit">Debit card</option>
-          <option value="credit">Credit card</option>
-        </select>
-      </Field>
-      <button className="btn btn-primary" disabled={busy}>{busy ? 'Issuing…' : 'Issue card'}</button>
-    </form>
-  );
-}
-
-function StatusForm({ account, onResult }) {
-  const [status, setStatus] = useState(String(account.status).toLowerCase());
-  const [confirm, setConfirm] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const current = String(account.status).toLowerCase();
-
-  async function apply() {
-    setBusy(true);
-    try {
-      const { data } = await api.patch(`/accounts/${account.account_id}/status`, { status });
-      onResult({ type: 'ok', text: data.message }, true);
-    } catch (err) {
-      onResult({ type: 'err', text: errMsg(err) });
-    } finally {
-      setBusy(false); setConfirm(false);
-    }
-  }
-  return (
-    <div className="form">
-      <Field label="Account status" htmlFor="acc-status" hint="Closing needs a zero balance. Frozen accounts cannot send or receive money.">
-        <select id="acc-status" value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="active">Active</option>
-          <option value="frozen">Frozen</option>
-          <option value="closed">Closed</option>
-        </select>
-      </Field>
-      <button className="btn btn-primary" disabled={status === current} onClick={() => setConfirm(true)}>Update status</button>
-      {confirm && (
+      <ul className="acc-list">
+        {rows.map((t) => (
+          <li key={t.transaction_id}>
+            <div className="acc-item">
+              <span className="acc-item-main">
+                <strong>{t.txn_type === 'Withdrawal' ? 'Withdrawal' : 'Deposit'}</strong>
+                <small className="muted">{fmtTime(t.txn_date)} · {pkr(t.amount)}</small>
+              </span>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setAsk(t)}>Reverse</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+      {ask && (
         <ConfirmDialog
-          title={`${status === 'active' ? 'Reactivate' : cap(status)} this account?`}
-          text={`Account ${fmtAccountNumber(account.account_number)} will be set to ${status}.`}
-          confirmLabel={`Yes, ${status === 'active' ? 'reactivate' : status === 'frozen' ? 'freeze' : 'close'}`}
-          danger={status !== 'active'} busy={busy} onConfirm={apply} onCancel={() => setConfirm(false)}
+          title="Reverse this cash entry?"
+          text={`${ask.txn_type === 'Withdrawal' ? 'Withdrawal' : 'Deposit'} of ${pkr(ask.amount)} will be undone and the balance put back.`}
+          confirmLabel="Reverse entry"
+          danger busy={busy} onConfirm={reverse} onCancel={() => setAsk(null)}
         />
       )}
     </div>
@@ -137,6 +98,7 @@ export default function Counter() {
   const [tab, setTab] = useState('deposit');
   const [msg, setMsg] = useState(null);
   const { data, loading, error, reload } = useFetch(customer ? '/accounts' : null);
+  const till = useFetch(role === 'head_teller' ? '/reports/till' : null);
 
   const accounts = (data || []).filter((a) => a.customer_id === customer?.customer_id);
   const sel = accounts.find((a) => a.account_id === selId) || null;
@@ -144,33 +106,43 @@ export default function Counter() {
   useEffect(() => { setSelId(null); setMsg(null); }, [customer]);
   useEffect(() => { if (!selId && accounts.length === 1) setSelId(accounts[0].account_id); /* eslint-disable-next-line */ }, [data]);
 
-  const tabs = [
-    { id: 'deposit', label: 'Deposit', icon: Banknote },
-    { id: 'withdraw', label: 'Withdraw', icon: Banknote },
-    { id: 'joint', label: 'Joint holder', icon: Users },
-    { id: 'card', label: 'Issue card', icon: CreditCard },
-    ...(role === 'manager' ? [{ id: 'status', label: 'Status', icon: ShieldAlert }] : []),
-  ];
-
-  const onResult = (m, refresh) => { setMsg(m); if (refresh) reload(); };
+  const onResult = (m, refresh) => {
+    setMsg(m);
+    if (refresh) { reload(); till.reload(); }
+  };
 
   return (
     <>
-      <PageHeader title="Counter" subtitle="Find a customer, then work on one of their accounts.">
-        <Link to="/open-account" state={{ customer }} className="btn btn-ghost"><UserPlus size={17} /> Open account</Link>
-      </PageHeader>
+      <PageHeader
+        title="Cash counter"
+        subtitle={role === 'head_teller' ? 'Cash in and out, with no cap. A same-day cash entry can be reversed.' : 'Cash in and out. A teller can move up to PKR 500,000 in one transaction.'}
+      />
+
+      {role === 'head_teller' && (
+        <div className="grid cards" style={{ marginBottom: 16 }}>
+          <article className="card">
+            <span className="eyebrow">Today&apos;s till</span>
+            {till.error && <Alert>{till.error}</Alert>}
+            {till.data && (
+              <dl className="meta">
+                <div><dt>Deposits</dt><dd>{pkr(till.data.deposits)}</dd></div>
+                <div><dt>Withdrawals</dt><dd>{pkr(till.data.withdrawals)}</dd></div>
+                <div className="span-2"><dt>Cash transactions</dt><dd>{till.data.total_transactions}</dd></div>
+              </dl>
+            )}
+          </article>
+        </div>
+      )}
 
       <div className="counter">
         <section className="card">
           <CustomerSearch selected={customer} onSelect={setCustomer} />
           {customer && (
             <>
-              <h3 className="section-title">Accounts</h3>
+              <h3 className="section-title">Accounts at this branch</h3>
               {error && <Alert>{error}</Alert>}
               {loading && !data ? <TableSkeleton rows={2} /> : accounts.length === 0 ? (
-                <Empty title="No accounts" text="This customer has no accounts yet.">
-                  <Link to="/open-account" state={{ customer }} className="btn btn-primary btn-sm">Open an account</Link>
-                </Empty>
+                <Empty title="No accounts here" text="This customer has no accounts at your branch." />
               ) : (
                 <ul className="acc-list">
                   {accounts.map((a) => (
@@ -195,7 +167,7 @@ export default function Counter() {
 
         <section className="card panel">
           {!sel ? (
-            <Empty title={customer ? 'Select an account' : 'No customer selected'} text={customer ? 'Choose one of the accounts to deposit, withdraw or manage it.' : 'Search by CNIC, name or phone to begin.'} />
+            <Empty title={customer ? 'Select an account' : 'No customer selected'} text={customer ? 'Choose an account to deposit or withdraw.' : 'Search by CNIC, name or phone to begin.'} />
           ) : (
             <>
               <div className="panel-head">
@@ -208,9 +180,9 @@ export default function Counter() {
               </div>
 
               <div className="tabs" role="tablist">
-                {tabs.map(({ id, label, icon: Icon }) => (
+                {['deposit', 'withdraw', ...(role === 'head_teller' ? ['reverse'] : [])].map((id) => (
                   <button key={id} role="tab" aria-selected={tab === id} className={`tab ${tab === id ? 'active' : ''}`} onClick={() => { setTab(id); setMsg(null); }}>
-                    <Icon size={15} /> {label}
+                    {id === 'reverse' ? <Undo2 size={15} /> : <Banknote size={15} />} {id === 'deposit' ? 'Deposit' : id === 'withdraw' ? 'Withdraw' : 'Reverse'}
                   </button>
                 ))}
               </div>
@@ -218,9 +190,7 @@ export default function Counter() {
               <Alert type={msg?.type} onClose={() => setMsg(null)}>{msg?.text}</Alert>
               <div className="tab-body" key={`${sel.account_id}-${tab}`}>
                 {(tab === 'deposit' || tab === 'withdraw') && <MoneyForm key={tab} account={sel} kind={tab} onResult={onResult} />}
-                {tab === 'joint' && <JointForm account={sel} onResult={onResult} />}
-                {tab === 'card' && <CardForm account={sel} onResult={onResult} />}
-                {tab === 'status' && <StatusForm key={sel.account_id} account={sel} onResult={onResult} />}
+                {tab === 'reverse' && <ReverseList account={sel} onResult={onResult} />}
               </div>
             </>
           )}

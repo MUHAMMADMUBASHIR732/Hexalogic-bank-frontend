@@ -52,8 +52,8 @@ export default function Statement() {
       {rows && rows.length > 0 && (
         <div className="stat-row">
           <div className="stat"><span>Transactions</span><strong>{rows.length}</strong></div>
-          <div className="stat"><span>Credits</span><strong className="in">{rows.filter((r) => txnInfo(r.txn_type).dir === 'in').length}</strong></div>
-          <div className="stat"><span>Debits</span><strong>{rows.filter((r) => txnInfo(r.txn_type).dir === 'out').length}</strong></div>
+          <div className="stat"><span>Credits</span><strong className="in">{rows.filter((r) => r.status !== 'reversed' && txnInfo(r.txn_type).dir === 'in').length}</strong></div>
+          <div className="stat"><span>Debits</span><strong>{rows.filter((r) => r.status !== 'reversed' && txnInfo(r.txn_type).dir === 'out').length}</strong></div>
         </div>
       )}
 
@@ -92,6 +92,7 @@ export default function Statement() {
                           {t.dir === 'in' && <ArrowDownLeft size={15} />}
                           {t.dir === 'out' && <ArrowUpRight size={15} />}
                           {t.label}
+                          {r.status === 'reversed' && <StatusBadge status="reversed" />}
                         </span>
                       </td>
                       <td data-label="Amount" className={`num amount-${t.dir || 'none'}`}>

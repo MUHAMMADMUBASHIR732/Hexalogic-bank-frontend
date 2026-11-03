@@ -47,7 +47,7 @@ export default function OpenAccount() {
             <Alert type="ok">{created.message}</Alert>
             {created.account_number && <p>New account number: <strong className="mono">{fmtAccountNumber(created.account_number)}</strong></p>}
             <div className="card-actions">
-              <Link to="/counter" state={{ customer }} className="btn btn-primary btn-sm">Go to counter</Link>
+              <Link to="/service" state={{ customer }} className="btn btn-primary btn-sm">Go to service desk</Link>
               <button className="btn btn-ghost btn-sm" onClick={() => setCreated(null)}>Open another</button>
             </div>
           </div>

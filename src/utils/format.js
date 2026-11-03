@@ -18,6 +18,18 @@ export const fmtAccountNumber = (n) => String(n ?? '').replace(/(.{4})/g, '$1 ')
 
 export const cap = (s) => (s ? s[0].toUpperCase() + s.slice(1) : '');
 
+const ROLES = {
+  customer: 'Customer',
+  teller: 'Teller',
+  head_teller: 'Head Teller',
+  cso: 'Customer Service Officer',
+  relationship_manager: 'Relationship Manager',
+  loan_officer: 'Loan Officer',
+  operations_manager: 'Operations Manager',
+  manager: 'Branch Manager',
+};
+export const roleLabel = (s) => ROLES[s] || cap(String(s || '').replaceAll('_', ' '));
+
 export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
 const TXN = {

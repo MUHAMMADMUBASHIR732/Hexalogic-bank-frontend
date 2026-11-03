@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Building2 } from 'lucide-react';
 import { useFetch } from '../../hooks/useFetch';
 import { Alert, Empty, PageHeader, TableSkeleton } from '../../components/ui';
-import { fmtDate, MONTHS, pkr, txnInfo } from '../../utils/format';
+import { cap, fmtDate, fmtTime, MONTHS, pkr, txnInfo } from '../../utils/format';
 
 const TABS = [
   { id: 'branch-summary', label: 'Branch summary' },
   { id: 'daily', label: 'Daily transactions' },
   { id: 'employee-activity', label: 'Employee activity' },
+  { id: 'audit', label: 'Account history' },
 ];
 
 function Table({ head, rows, render }) {
@@ -48,7 +49,7 @@ function DailyBars({ rows }) {
 
 export default function Reports() {
   const [tab, setTab] = useState('branch-summary');
-  const { data, loading, error } = useFetch(`/reports/${tab}`);
+  const { data, loading, error } = useFetch(tab === 'audit' ? '/audit' : `/reports/${tab}`);
   const rows = data || [];
 
   return (
@@ -99,6 +100,20 @@ export default function Reports() {
               )}
             />
           </>
+        ) : tab === 'audit' ? (
+          <Table
+            head={[['When'], ['Account'], ['Change'], ['From'], ['To']]}
+            rows={rows}
+            render={(r) => (
+              <tr key={r.log_id}>
+                <td data-label="When">{fmtDate(r.changed_at)} <span className="muted small">{fmtTime(r.changed_at)}</span></td>
+                <td data-label="Account" className="mono">{r.account_number}</td>
+                <td data-label="Change">{r.action === 'STATUS_CHANGE' ? 'Status' : 'Balance'}</td>
+                <td data-label="From">{r.action === 'STATUS_CHANGE' ? cap(r.old_value) : pkr(r.old_value)}</td>
+                <td data-label="To">{r.action === 'STATUS_CHANGE' ? cap(r.new_value) : pkr(r.new_value)}</td>
+              </tr>
+            )}
+          />
         ) : (
           <Table
             head={[['Employee'], ['Month'], ['Transactions', 1], ['Total amount', 1]]}

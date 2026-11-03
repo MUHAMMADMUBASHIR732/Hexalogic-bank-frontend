@@ -61,7 +61,7 @@ export default function Register() {
         <div className="auth-card auth-card-wide">
           <div className="auth-brand-mobile show"><Brand /></div>
           <h1>Create your account</h1>
-          <p className="muted">Register as a customer. A teller can open your first bank account.</p>
+          <p className="muted">Register as a customer. Customer service or your relationship manager opens your first account.</p>
           <Alert>{error}</Alert>
           <form onSubmit={submit} className="form" noValidate>
             <div className="form-grid">

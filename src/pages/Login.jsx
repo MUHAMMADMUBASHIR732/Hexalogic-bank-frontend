@@ -8,6 +8,11 @@ import { Alert, Brand, Field } from '../components/ui';
 const DEMO_USERS = [
   { label: 'Customer', username: 'ayesha', password: 'password123' },
   { label: 'Teller', username: 'teller1', password: 'teller123' },
+  { label: 'Head Teller', username: 'head1', password: 'head123' },
+  { label: 'Service', username: 'cso1', password: 'cso123' },
+  { label: 'RM', username: 'rm1', password: 'rm123' },
+  { label: 'Loan Officer', username: 'loan1', password: 'loan123' },
+  { label: 'Operations', username: 'ops1', password: 'ops123' },
   { label: 'Manager', username: 'manager1', password: 'manager123' },
 ];
 
@@ -44,9 +49,9 @@ export default function Login() {
           <h2>Banking that keeps its rules in the database.</h2>
           <p>Every balance, transfer and loan decision is checked by the database itself, so the numbers you see are the numbers that count.</p>
           <ul>
-            <li><span className="feat-icon"><ShieldCheck size={18} /></span><span>Role-based access for customers, tellers and managers</span></li>
+            <li><span className="feat-icon"><ShieldCheck size={18} /></span><span>A separate desk for each branch job</span></li>
             <li><span className="feat-icon"><ArrowLeftRight size={18} /></span><span>Transfers and statements with running balances</span></li>
-            <li><span className="feat-icon"><ClipboardCheck size={18} /></span><span>Loan applications reviewed by managers</span></li>
+            <li><span className="feat-icon"><ClipboardCheck size={18} /></span><span>Loans go from officer to branch manager</span></li>
           </ul>
         </div>
         <small>Database Management System course project</small>

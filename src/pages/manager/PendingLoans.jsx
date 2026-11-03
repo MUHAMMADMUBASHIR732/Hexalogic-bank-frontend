@@ -6,7 +6,7 @@ import { Alert, ConfirmDialog, Empty, PageHeader, TableSkeleton } from '../../co
 import { pkr } from '../../utils/format';
 
 export default function PendingLoans() {
-  const { data, loading, error: loadError, reload } = useFetch('/loans/pending');
+  const { data, loading, error: loadError, reload } = useFetch('/loans/recommended');
   const [ask, setAsk] = useState(null); // { loan, approve }
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -19,7 +19,7 @@ export default function PendingLoans() {
       setMsg({ type: 'ok', text: `Loan #${ask.loan.loan_id}: ${res.message}` });
       reload(); // refresh the queue
     } catch (e) {
-      setMsg({ type: 'err', text: errMsg(e) }); // e.g. 'Loan is not pending'
+      setMsg({ type: 'err', text: errMsg(e) });
     } finally {
       setBusy(false); setAsk(null);
     }
@@ -27,12 +27,12 @@ export default function PendingLoans() {
 
   return (
     <>
-      <PageHeader title="Pending loans" subtitle="Review applications and approve or reject them." />
+      <PageHeader title="Sanction loans" subtitle="These applications were recommended by a loan officer. Approve or reject them." />
       <Alert type={msg?.type} onClose={() => setMsg(null)}>{msg?.text}</Alert>
       {loadError && <Alert>{loadError}</Alert>}
 
       {loading && !data ? <TableSkeleton /> : loans.length === 0 && !loadError ? (
-        <Empty title="All caught up" text="There are no loan applications waiting for review." />
+        <Empty title="All caught up" text="There are no recommended loans waiting for sanction." />
       ) : (
         <div className={`card table-card ${loading ? 'is-loading' : ''}`} aria-busy={loading}>
           <div className="table-wrap">

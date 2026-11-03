@@ -82,7 +82,7 @@ export default function Loans() {
       {loading && !data ? (
         <CardSkeletons n={2} />
       ) : loans.length === 0 && !error ? (
-        <Empty title="No loans yet" text="Apply for a loan and a manager will review it.">
+        <Empty title="No loans yet" text="Apply for a loan. A loan officer reviews it, then the branch manager sanctions it.">
           <Link to="/loans/apply" className="btn btn-primary"><HandCoins size={17} /> Apply for a loan</Link>
         </Empty>
       ) : (
@@ -108,7 +108,8 @@ export default function Loans() {
                   <button className="btn btn-primary btn-sm" onClick={() => setPaying(l)}>Pay installment</button>
                 </div>
               )}
-              {String(l.status).toLowerCase() === 'pending' && <p className="muted small note">Waiting for a manager to review this application.</p>}
+              {String(l.status).toLowerCase() === 'pending' && <p className="muted small note">Waiting for a loan officer to review this application.</p>}
+              {String(l.status).toLowerCase() === 'recommended' && <p className="muted small note">Recommended. Waiting for the branch manager to sanction it.</p>}
             </article>
           ))}
         </div>

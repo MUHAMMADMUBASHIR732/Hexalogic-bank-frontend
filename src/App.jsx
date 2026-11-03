@@ -12,17 +12,32 @@ import Loans from './pages/customer/Loans';
 import ApplyLoan from './pages/customer/ApplyLoan';
 import EmiCalculator from './pages/customer/EmiCalculator';
 import Counter from './pages/staff/Counter';
+import ServiceDesk from './pages/staff/ServiceDesk';
 import OpenAccount from './pages/staff/OpenAccount';
+import Portfolio from './pages/staff/Portfolio';
+import LoanReview from './pages/staff/LoanReview';
+import Operations from './pages/staff/Operations';
 import PendingLoans from './pages/manager/PendingLoans';
+import BranchControl from './pages/manager/BranchControl';
 import Reports from './pages/manager/Reports';
 
 const CUSTOMER = ['customer'];
-const STAFF = ['teller', 'manager'];
-const MGR = ['manager'];
+const CASH = ['teller', 'head_teller'];
+const SERVICE = ['cso', 'relationship_manager'];
+const HOME = {
+  customer: '/accounts',
+  teller: '/counter',
+  head_teller: '/counter',
+  cso: '/service',
+  relationship_manager: '/service',
+  loan_officer: '/loans/review',
+  operations_manager: '/operations',
+  manager: '/reports',
+};
 
-function Home() { // send each role to its start page
+function Home() {
   const { role } = useAuth();
-  return <Navigate to={role === 'customer' ? '/accounts' : '/counter'} replace />;
+  return <Navigate to={HOME[role] || '/accounts'} replace />;
 }
 
 function NotFound() {
@@ -44,14 +59,19 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/accounts" element={<Protected roles={CUSTOMER}><Accounts /></Protected>} />
             <Route path="/accounts/:id/statement" element={<Statement />} />
-            <Route path="/transfer" element={<Transfer />} />
+            <Route path="/transfer" element={<Protected roles={[...CUSTOMER, ...CASH]}><Transfer /></Protected>} />
             <Route path="/loans" element={<Protected roles={CUSTOMER}><Loans /></Protected>} />
             <Route path="/loans/apply" element={<Protected roles={CUSTOMER}><ApplyLoan /></Protected>} />
             <Route path="/loans/emi" element={<Protected roles={CUSTOMER}><EmiCalculator /></Protected>} />
-            <Route path="/counter" element={<Protected roles={STAFF}><Counter /></Protected>} />
-            <Route path="/open-account" element={<Protected roles={STAFF}><OpenAccount /></Protected>} />
-            <Route path="/loans/pending" element={<Protected roles={MGR}><PendingLoans /></Protected>} />
-            <Route path="/reports" element={<Protected roles={MGR}><Reports /></Protected>} />
+            <Route path="/counter" element={<Protected roles={CASH}><Counter /></Protected>} />
+            <Route path="/service" element={<Protected roles={SERVICE}><ServiceDesk /></Protected>} />
+            <Route path="/open-account" element={<Protected roles={SERVICE}><OpenAccount /></Protected>} />
+            <Route path="/portfolio" element={<Protected roles={['relationship_manager']}><Portfolio /></Protected>} />
+            <Route path="/loans/review" element={<Protected roles={['loan_officer']}><LoanReview /></Protected>} />
+            <Route path="/loans/pending" element={<Protected roles={['manager']}><PendingLoans /></Protected>} />
+            <Route path="/operations" element={<Protected roles={['operations_manager']}><Operations /></Protected>} />
+            <Route path="/control" element={<Protected roles={['manager']}><BranchControl /></Protected>} />
+            <Route path="/reports" element={<Protected roles={['manager']}><Reports /></Protected>} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>

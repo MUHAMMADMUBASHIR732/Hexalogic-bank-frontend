@@ -85,7 +85,7 @@ export function TableSkeleton({ rows = 5 }) {
 }
 
 const STATUS = {
-  active: 'ok', approved: 'ok', closed: 'muted', frozen: 'warn', pending: 'warn', rejected: 'bad',
+  active: 'ok', approved: 'ok', closed: 'muted', frozen: 'warn', pending: 'warn', recommended: 'info', rejected: 'bad',
 };
 export function StatusBadge({ status }) {
   const s = String(status || '').toLowerCase();

@@ -1,20 +1,25 @@
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  ArrowLeftRight, BarChart3, Calculator, ClipboardCheck, ConciergeBell, HandCoins, LogOut, Menu, UserPlus, Wallet, X,
+  ArrowLeftRight, BarChart3, Calculator, ClipboardCheck, ConciergeBell, HandCoins, LogOut, Menu, ShieldAlert, UserPlus, Users, Wallet, X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Brand } from './ui';
-import { cap } from '../utils/format';
+import { roleLabel } from '../utils/format';
 
 const LINKS = [
   { to: '/accounts', label: 'My accounts', icon: Wallet, roles: ['customer'] },
-  { to: '/transfer', label: 'Transfer', icon: ArrowLeftRight, roles: ['customer', 'teller', 'manager'] },
+  { to: '/transfer', label: 'Transfer', icon: ArrowLeftRight, roles: ['customer', 'teller', 'head_teller'] },
   { to: '/loans', label: 'My loans', icon: HandCoins, roles: ['customer'], end: true },
   { to: '/loans/emi', label: 'EMI calculator', icon: Calculator, roles: ['customer'] },
-  { to: '/counter', label: 'Counter', icon: ConciergeBell, roles: ['teller', 'manager'] },
-  { to: '/open-account', label: 'Open account', icon: UserPlus, roles: ['teller', 'manager'] },
-  { to: '/loans/pending', label: 'Pending loans', icon: ClipboardCheck, roles: ['manager'] },
+  { to: '/counter', label: 'Counter', icon: ConciergeBell, roles: ['teller', 'head_teller'] },
+  { to: '/service', label: 'Service desk', icon: ConciergeBell, roles: ['cso', 'relationship_manager'] },
+  { to: '/open-account', label: 'Open account', icon: UserPlus, roles: ['cso', 'relationship_manager'] },
+  { to: '/portfolio', label: 'My customers', icon: Users, roles: ['relationship_manager'] },
+  { to: '/loans/review', label: 'Loan review', icon: ClipboardCheck, roles: ['loan_officer'] },
+  { to: '/loans/pending', label: 'Sanction loans', icon: ClipboardCheck, roles: ['manager'] },
+  { to: '/operations', label: 'Operations', icon: ShieldAlert, roles: ['operations_manager'] },
+  { to: '/control', label: 'Branch control', icon: ShieldAlert, roles: ['manager'] },
   { to: '/reports', label: 'Reports', icon: BarChart3, roles: ['manager'] },
 ];
 
@@ -62,7 +67,7 @@ export default function Layout() {
             <span className="avatar" aria-hidden="true">{(username || '?')[0].toUpperCase()}</span>
             <span className="user-meta">
               <strong>{username}</strong>
-              <small>{cap(role)}</small>
+              <small>{roleLabel(role)}</small>
             </span>
           </div>
           <button className="icon-btn logout" onClick={doLogout} aria-label="Log out" title="Log out"><LogOut size={19} /></button>

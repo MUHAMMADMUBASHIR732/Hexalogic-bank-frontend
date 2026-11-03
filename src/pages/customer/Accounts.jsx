@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowLeftRight, ArrowRight, Calculator, FileText, HandCoins, MapPin, Plus } from 'lucide-react';
+import { ArrowLeftRight, ArrowRight, Calculator, CreditCard, FileText, HandCoins, MapPin, Plus, UserRound } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useFetch } from '../../hooks/useFetch';
 import { Alert, CardSkeletons, Empty, StatusBadge } from '../../components/ui';
@@ -29,6 +29,8 @@ const dateLabel = new Intl.DateTimeFormat('en-GB', { weekday: 'long', day: 'nume
 export default function Accounts() {
   const { username } = useAuth();
   const { data, loading, error, reload } = useFetch('/accounts');
+  const cards = useFetch('/cards');
+  const nominees = useFetch('/nominees');
   const accounts = data || [];
   const active = accounts.filter((a) => String(a.status).toLowerCase() === 'active').length;
   const joint = accounts.filter((a) => a.role === 'Joint').length;
@@ -72,7 +74,7 @@ export default function Accounts() {
       {loading && !data ? (
         <CardSkeletons n={2} />
       ) : accounts.length === 0 && !error ? (
-        <Empty title="No accounts yet" text="Visit a branch and a teller will open your first account." />
+        <Empty title="No accounts yet" text="Visit a branch. Customer service or your relationship manager will open your first account." />
       ) : (
         <div className="grid cards stagger">
           {accounts.map((a, i) => (
@@ -92,11 +94,39 @@ export default function Accounts() {
                   {a.role && <div><dt>Holder</dt><dd>{a.role === 'Joint' ? 'Joint holder' : 'Primary holder'}</dd></div>}
                   {a.branch_name && <div className="span-2"><dt>Branch</dt><dd><MapPin size={13} /> {a.branch_name}</dd></div>}
                 </dl>
+                {(cards.data || []).some((c) => c.account_id === a.account_id) && (
+                  <ul className="meta">
+                    {(cards.data || []).filter((c) => c.account_id === a.account_id).map((c) => (
+                      <li key={c.card_id}><CreditCard size={13} /> {c.card_type === 'credit' ? 'Credit' : 'Debit'} {c.card_number} · exp {c.expiry_date}</li>
+                    ))}
+                  </ul>
+                )}
                 <div className="card-actions">
                   <Link className="btn btn-ghost btn-sm" to={`/accounts/${a.account_id}/statement`}><FileText size={15} /> Statement</Link>
                   <Link className="btn btn-ghost btn-sm" to={`/transfer?from=${a.account_id}`}><ArrowLeftRight size={15} /> Transfer</Link>
                 </div>
               </div>
+            </article>
+          ))}
+        </div>
+      )}
+
+      <div className="section-h">
+        <h2>Nominees</h2>
+      </div>
+      {nominees.error && <Alert>{nominees.error}</Alert>}
+      {nominees.loading && !nominees.data ? <CardSkeletons n={1} /> : (nominees.data || []).length === 0 ? (
+        <Empty title="No nominee yet" text="Customer service or your relationship manager can record one at the branch." />
+      ) : (
+        <div className="grid cards">
+          {(nominees.data || []).map((n) => (
+            <article className="card" key={n.nominee_id}>
+              <span className="eyebrow"><UserRound size={14} /> Nominee</span>
+              <h3>{n.name}</h3>
+              <dl className="meta">
+                <div><dt>Relationship</dt><dd>{n.relationship}</dd></div>
+                <div><dt>CNIC</dt><dd className="mono">{n.cnic}</dd></div>
+              </dl>
             </article>
           ))}
         </div>
