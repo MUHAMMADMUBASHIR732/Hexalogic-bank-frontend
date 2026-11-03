@@ -72,59 +72,57 @@ export default function StaffAdmin() {
       <PageHeader title="Administration" subtitle="Create and manage staff logins. Admin only." />
       <Alert type={msg?.type} onClose={() => setMsg(null)}>{msg?.text}</Alert>
 
-      <div className="split">
-        <form className="card form" onSubmit={createStaff} noValidate>
-          <h3 className="section-title">Create a staff login</h3>
-          <div className="form-grid">
-            <Field label="CNIC (13 digits)"><input value={form.cnic} onChange={set('cnic')} inputMode="numeric" placeholder="3511111111103" maxLength={13} required /></Field>
-            <Field label="Full name"><input value={form.name} onChange={set('name')} placeholder="Sara Teller" required /></Field>
-            <Field label="Designation">
-              <select value={form.designation} onChange={set('designation')}>
-                {DESIGNATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
-            </Field>
-            <Field label="Email"><input type="email" value={form.email} onChange={set('email')} placeholder="sara@bank.com" required /></Field>
-            <Field label="Branch ID"><input value={form.branchId} onChange={set('branchId')} inputMode="numeric" required /></Field>
-            <Field label="Username"><input value={form.username} onChange={set('username')} placeholder="sara" autoComplete="off" required /></Field>
-          </div>
-          <Field label="Password (min 8 chars)" htmlFor="st-pw">
-            <input id="st-pw" type="password" value={form.password} onChange={set('password')} autoComplete="new-password" required />
+      <form className="card form" onSubmit={createStaff} noValidate>
+        <h3 className="section-title">Create a staff login</h3>
+        <div className="form-grid">
+          <Field label="CNIC (13 digits)"><input value={form.cnic} onChange={set('cnic')} inputMode="numeric" placeholder="3511111111103" maxLength={13} required /></Field>
+          <Field label="Full name"><input value={form.name} onChange={set('name')} placeholder="Sara Teller" required /></Field>
+          <Field label="Designation">
+            <select value={form.designation} onChange={set('designation')}>
+              {DESIGNATIONS.map((d) => <option key={d} value={d}>{d}</option>)}
+            </select>
           </Field>
-          <button className="btn btn-primary btn-block" disabled={busy}>{busy ? 'Working…' : 'Create staff login'}</button>
-        </form>
-
-        <div className="card">
-          <h3 className="section-title">Existing logins</h3>
-          {loading ? <p className="muted">Loading…</p> : (
-            <div className="table-wrap">
-              <table className="table">
-                <thead><tr><th>Name</th><th>Designation</th><th>Username</th><th>Role</th><th>Status</th><th></th></tr></thead>
-                <tbody>
-                  {(data || []).map((r) => (
-                    <tr key={r.employee_id}>
-                      <td><strong>{r.name}</strong><small className="muted block">CNIC {r.cnic}</small></td>
-                      <td>{r.designation}</td>
-                      <td className="mono">{r.username ?? <span className="muted">no login</span>}</td>
-                      <td>{r.role ? <span className="badge">{r.role}</span> : '—'}</td>
-                      <td>{r.user_id ? (r.is_active ? 'active' : <strong>disabled</strong>) : '—'}</td>
-                      <td className="num">
-                        {r.user_id && (
-                          <>
-                            <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => resetPassword(r)}>Reset password</button>
-                            <button className={`btn btn-sm ${r.is_active ? 'btn-danger' : 'btn-primary'}`} disabled={busy} onClick={() => toggle(r)}>
-                              {r.is_active ? 'Disable' : 'Enable'}
-                            </button>
-                          </>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          <p className="muted small">Passwords are bcrypt-hashed on the server; the API never sees or stores plain text.</p>
+          <Field label="Email"><input type="email" value={form.email} onChange={set('email')} placeholder="sara@bank.com" required /></Field>
+          <Field label="Branch ID"><input value={form.branchId} onChange={set('branchId')} inputMode="numeric" required /></Field>
+          <Field label="Username"><input value={form.username} onChange={set('username')} placeholder="sara" autoComplete="off" required /></Field>
         </div>
+        <Field label="Password (min 8 chars)" htmlFor="st-pw">
+          <input id="st-pw" type="password" value={form.password} onChange={set('password')} autoComplete="new-password" required />
+        </Field>
+        <button className="btn btn-primary btn-block" disabled={busy}>{busy ? 'Working…' : 'Create staff login'}</button>
+      </form>
+
+      <div className="card">
+        <h3 className="section-title">Existing logins</h3>
+        {loading ? <p className="muted">Loading…</p> : (
+          <div className="table-wrap">
+            <table className="table">
+              <thead><tr><th>Name</th><th>Designation</th><th>Username</th><th>Role</th><th>Status</th><th></th></tr></thead>
+              <tbody>
+                {(data || []).map((r) => (
+                  <tr key={r.employee_id}>
+                    <td><strong>{r.name}</strong><small className="muted block">CNIC {r.cnic}</small></td>
+                    <td>{r.designation}</td>
+                    <td className="mono">{r.username ?? <span className="muted">no login</span>}</td>
+                    <td>{r.role ? <span className="badge">{r.role}</span> : '—'}</td>
+                    <td>{r.user_id ? (r.is_active ? 'active' : <strong>disabled</strong>) : '—'}</td>
+                    <td className="num">
+                      {r.user_id && (
+                        <>
+                          <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => resetPassword(r)}>Reset password</button>
+                          <button className={`btn btn-sm ${r.is_active ? 'btn-danger' : 'btn-primary'}`} disabled={busy} onClick={() => toggle(r)}>
+                            {r.is_active ? 'Disable' : 'Enable'}
+                          </button>
+                        </>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <p className="muted small">Passwords are bcrypt-hashed on the server; the API never sees or stores plain text.</p>
       </div>
     </>
   );
